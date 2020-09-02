@@ -1,0 +1,5 @@
+aws_secret_key = "xxxxxxxx"
+aws_access_key =  "yyyyyyyyyy"
+private_key_path = "/somewhere/Default.pem"
+state_storage_s3 = "asborisov-state-storage-lock-s3"
+state_lock_dynamodb = "asborisov-state-lock-dynamodb"

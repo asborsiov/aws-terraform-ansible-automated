@@ -1,0 +1,80 @@
+- hosts: k8s_masters_public[0] 
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Setup cluster
+      register: k8s_setup
+      shell: |
+        kubeadm init --ignore-preflight-errors=NumCPU -v=5 --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint "{{ master_elb_dns }}" --upload-certs > init_output
+      args:
+        executable: /bin/bash
+        creates: /etc/kubernetes/admin.conf
+
+    - name: create join master command
+      register: k8s_masters_join
+      shell: |
+        cert_data=$(kubeadm init phase upload-certs --upload-certs > cert_output && cat cert_output | tail -c -65)
+        join_cmd=$(kubeadm token create --print-join-command)
+        allParts="$join_cmd --control-plane --certificate-key $cert_data --ignore-preflight-errors=NumCPU --v=5"
+        echo $allParts | sed 's/\\//g'
+      args: 
+        executable: /bin/bash
+
+    - name: register join command
+      set_fact:
+        join_command: "{{ k8s_masters_join.stdout }}"
+      delegate_to: localhost
+      delegate_facts: true
+
+    - debug: msg={{ hostvars['localhost']['join_command'] }}
+
+    - name: Copy admin config
+      shell: |
+        mkdir -p $HOME/.kube
+        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+      args:
+        executable: /bin/bash
+        creates: $HOME/.kube/config 
+
+    - name: Apply flannel
+      register: flannel
+      shell: |
+        kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+        touch /srv/flannel_init
+      args: 
+        executable: /bin/bash
+        creates: /srv/flannel_init
+
+    - pause:
+       minutes: 1
+
+- hosts: k8s_masters_public,!k8s_masters_public[0]
+  become: yes
+  gather_facts: false
+  serial: 1
+  tasks:
+
+    - name: Join all masters
+      register: joining
+      shell: |
+        {{ hostvars['localhost']['join_command'] }}
+        touch /srv/masters_init
+      args:
+        executable: /bin/bash
+        creates: /srv/masters_init
+    - pause:
+        seconds: 60
+
+    - debug: msg="{{ joining.stdout }}"
+    - debug: msg="{{ joining.stderr }}"
+
+
+- hosts: k8s_masters_public
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Enable swap
+      shell: |
+        dd if=/dev/zero of=/swapfile bs=1024 count=1048576 && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+      args:
+        executable: /bin/bash

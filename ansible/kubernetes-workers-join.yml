@@ -1,0 +1,40 @@
+- hosts: k8s_masters_public[0] 
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Create join command
+      register: k8s_join
+      shell: |
+        kubeadm token create --print-join-command #| awk "{print $5}{print $7}"
+      args:
+        executable: /bin/bash
+
+    - name: register join command
+      set_fact:
+        worker_join_command: "{{ k8s_join.stdout }}"
+      delegate_to: localhost
+      delegate_facts: true
+
+    - debug: msg={{ hostvars['localhost']['worker_join_command'] }}
+
+- hosts: k8s_workers_public
+  become: yes
+  gather_facts: false
+  serial: 1
+  tasks:
+    - name: Join all workers
+      register: joining
+      shell: |
+        {{ hostvars['localhost']['worker_join_command'] }}
+        touch /srv/masters_init
+      args:
+        executable: /bin/bash
+
+    - debug: msg="{{ joining.stdout }}"
+    - debug: msg="{{ joining.stderr }}"
+
+    - name: Enable swap
+      shell: |
+        dd if=/dev/zero of=/swapfile bs=1024 count=1048576 && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+      args:
+        executable: /bin/bash

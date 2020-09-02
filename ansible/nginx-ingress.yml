@@ -1,0 +1,33 @@
+- hosts: k8s_masters_public[0] 
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: copy daemonset
+      copy:
+        src: /somewhere/ansible/nginx-ingress/DaemonSet.yaml
+        dest: /srv/DaemonSet.yaml
+
+    - name: copy defaultbackend
+      copy:
+        src: /somewhere/ansible/nginx-ingress/DefaultBackend.yaml    
+        dest: /srv/DefaultBackend.yaml 
+
+    - name: copy namespace
+      copy:
+        src: /somewhere/ansible/nginx-ingress/Namespace.yaml          
+        dest: /srv/Namespace.yaml 
+
+    - name: copy RBAC
+      copy:
+        src: /somewhere/ansible/nginx-ingress/RBAC.yaml  
+        dest: /srv/RBAC.yaml 
+
+    - name: Setup nginx-ingress
+      register: ingress_setup
+      shell: |
+        kubectl apply -f /srv/Namespace.yaml
+        kubectl apply -f /srv/RBAC.yaml
+        kubectl apply -f /srv/DaemonSet.yaml
+        kubectl apply -f /srv/DefaultBackend.yaml
+      args:
+        executable: /bin/bash
