@@ -1,7 +1,7 @@
 # Fully automated k8s setup on AWS
 <br>
 This is an experimental take on task to spin k8s multimaster cluster with ELB in one go. <br>
-Inventory for ansible is generated automatically. Ansible tasks is not groomed though. <br>
+Inventory for ansible is generated automatically. Ansible tasks has some room for improvement though. <br>
 Done with very scarce compute resources, so it has some specific commands tailored to deal with it.<br>
 
 ```bash
