@@ -1,6 +1,7 @@
 # Fully automated k8s setup on AWS
 <br>
-This is an another experimental take on task to spin k8s cluster with one console command (granted this is will be very long command to execute tf files one after another and then starting ansible playbooks). <br>
+This is an another experimental take on task to spin k8s cluster with one console command. Inventory for ansible is generated automatically. <br>
+Done with very scarce compute resources, so it has some specific commands tailored to it.<br>
 
 ```bash
 cd /somewhere/remote-state && terraform apply -var-file='/somewhere/aws.tfvars' -auto-approve &&
