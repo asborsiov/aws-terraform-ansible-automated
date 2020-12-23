@@ -10,5 +10,5 @@ cd /aws-terraform/master && terraform apply -var-file='/aws-terraform/aws.tfvars
 cd /aws-terraform/worker && terraform apply -var-file='/aws-terraform/aws.tfvars' -auto-approve && 
 cd /aws-terraform/template && terraform apply -var-file='/aws-terraform/aws.tfvars' -auto-approve && 
 sleep 120 && 
-cd /aws-terraform/ansible && ansible-playbook -i /xxx/hosts /xxx/ansible/docker.yml /aws-terraform/ansible/kubernetes-bins.yml /aws-terraform/ansible/kubernetes-masters-bootstrap.yml /aws-terraform/ansible/kubernetes-workers-join.yml
+cd /aws-terraform/ansible && ansible-playbook -i /aws-terraform/hosts /aws-terraform/ansible/docker.yml /aws-terraform/ansible/kubernetes-bins.yml /aws-terraform/ansible/kubernetes-masters-bootstrap.yml /aws-terraform/ansible/kubernetes-workers-join.yml
 ```
