@@ -1,0 +1,10 @@
+1. Complete inputs in tfvars file.
+
+2. Sample one-liner
+cd /aws-terraform/remote-state && terraform init && terraform apply -var-file='/aws-terraform/aws.tfvars' -auto-approve &&
+cd /aws-terraform/vpc && terraform init && terraform apply -var-file='/aws-terraform/aws.tfvars' -auto-approve &&
+cd /aws-terraform/master && terraform init && terraform apply -var-file='/aws-terraform/aws.tfvars' -auto-approve && 
+cd /aws-terraform/worker &&  terraform init &&terraform apply -var-file='/aws-terraform/aws.tfvars' -auto-approve && 
+cd /aws-terraform/template && terraform init && terraform apply -var-file='/aws-terraform/aws.tfvars' -auto-approve && 
+sleep 300 && 
+cd /aws-terraform/ansible && ansible-playbook -i /aws-terraform/hosts /aws-terraform/ansible/docker.yml /aws-terraform/ansible/kubernetes-bins.yml /aws-terraform/ansible/kubernetes-masters-bootstrap.yml /aws-terraform/ansible/kubernetes-workers-join.yml
